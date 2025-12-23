@@ -1,3 +1,22 @@
 spring:
   application:
-    name: masterdata
+    name: global-distributor-master-data
+
+  datasource:
+    url: jdbc:postgresql://api.globaldistributor.org:5432/masterdata
+    username: gda_admin_db
+    password: B*scs6ahm,?9ees}4kNQ2ykWg_^o!QG3
+    driver-class-name: org.postgresql.Driver
+    jpa:
+      hibernate:
+        ddl-auto: update
+      show-sql: true
+
+server:
+  port: 8080
+
+gda:
+  security:
+    jwt:
+      secret: 5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437
+      expiration: 86400000 # 24 hours
