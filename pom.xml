@@ -11,7 +11,7 @@
 	<groupId>com.gda</groupId>
 	<artifactId>masterdata</artifactId>
 	<version>0.0.1</version>
-	<name>global-distributor-master-data</name>
+	<name>GDA - Knowledge Master Data</name>
 	<description>Master data for GDA Portal</description>
 	<url>https://globaldistributor.org</url>
 	<licenses>
