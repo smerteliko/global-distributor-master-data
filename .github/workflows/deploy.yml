@@ -1,16 +1,15 @@
-name: Deploy MasterData (Auto)
-
+name: Deploy MasterData Service
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
 
 jobs:
   deploy:
-    runs-on: self-hosted # Твой Windows-сервер
+    runs-on: self-hosted
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up JDK 25
@@ -18,36 +17,88 @@ jobs:
         with:
           java-version: '25'
           distribution: 'temurin'
-          cache: maven
+          cache: 'maven'
 
       - name: Build with Maven
-        run: .\mvnw.cmd clean package -DskipTests
+        run: mvn clean package -DskipTests
 
-      - name: Deploy on Server
+      - name: Deploy via PM2 Ecosystem
+        shell: powershell
+        env:
+          PM2_HOME: "C:\\Users\\Administrator\\.pm2"
         run: |
-          # --- НАСТРОЙКИ ---
+          # --- 1. НАСТРОЙКИ ---
+          $AppName = "masterdata-backend"
           $TargetDir = "C:\GlobalDist\apps\masterdata"
-          $ConfigFile = "C:\GlobalDist\config\masterdata.yaml"
+          $TargetJar = "$TargetDir\app.jar"
+          $EcosystemFile = "$TargetDir\ecosystem.config.js"
           
-          $JarPattern = "masterdata-*.jar"
-          $SourceJar = (Get-Item "target\$JarPattern").FullName
+          # Пути для JS (двойные слеши)
+          $JavaPathJS = "C:\\Program Files\\OpenJDK\\jdk-25\\bin\\java.exe"
+          $TargetJarJS = "C:\\GlobalDist\\apps\\masterdata\\app.jar"
           
-          Write-Host "--- 1. Stopping old process ---"
-          # Останавливаем старую Java
-          Stop-Process -Name "java" -Force -ErrorAction SilentlyContinue
-          Start-Sleep -Seconds 3
+          # 🔥 ССЫЛКА НА ВАШ КОНФИГ ФАЙЛ НА СЕРВЕРЕ 🔥
+          # Убедитесь, что файл C:\GlobalDist\config\masterdata.yaml существует!
+          $ConfigPathJS = "file:C:\\GlobalDist\\config\\masterdata.yaml"
           
-          Write-Host "--- 2. Copying new version ---"
-          if (!(Test-Path $TargetDir)) { New-Item -ItemType Directory -Force -Path $TargetDir }
+          $LogFileJS = "C:\\GlobalDist\\logs\\masterdata.log"
+          $PM2 = "C:\Users\Administrator\AppData\Roaming\npm\pm2.cmd"
+
+          # Ищем JAR
+          $SourceJar = Get-ChildItem -Path ".\target\*.jar" | Where-Object { $_.Name -notlike "original-*" } | Select-Object -First 1
+          if (!$SourceJar) { Write-Error "Build failed: JAR not found"; exit 1 }
+
+          # --- 2. ПОДГОТОВКА ---
+          Write-Host "Stopping old process..."
+          if (Test-Path $PM2) { & $PM2 delete $AppName } else { pm2 delete $AppName }
+          $LASTEXITCODE = 0 
+          Start-Sleep -Seconds 2
+
+          # --- 3. КОПИРОВАНИЕ ---
+          if (!(Test-Path -Path $TargetDir)) { New-Item -ItemType Directory -Force -Path $TargetDir }
+          if (!(Test-Path -Path "C:\GlobalDist\logs")) { New-Item -ItemType Directory -Force -Path "C:\GlobalDist\logs" }
+
+          Write-Host "Copying JAR..."
+          Copy-Item -Path $SourceJar.FullName -Destination $TargetJar -Force
+
+          # --- 4. ГЕНЕРАЦИЯ КОНФИГА ---
+          # Генерируем конфиг, используя переменную окружения для настроек Spring
           
-          # Копируем и переименовываем
-          Copy-Item $SourceJar -Destination "$TargetDir\app.jar" -Force
+          $EcosystemContent = @"
+          module.exports = {
+            apps : [{
+              name: '$AppName',
+              script: '$JavaPathJS',
+              args: [
+                '-jar',
+                '$TargetJarJS'
+              ],
+              env: {
+                'SPRING_CONFIG_LOCATION': '$ConfigPathJS'
+              },
+              exec_mode: 'fork',
+              instances: 1,
+              autorestart: true,
+              watch: false,
+              time: true,
+              out_file: '$LogFileJS',
+              error_file: '$LogFileJS',
+              merge_logs: true
+            }]
+          };
+          "@
           
-          Write-Host "--- 3. Starting new version ---"
-          Set-Location $TargetDir
+          Set-Content -Path $EcosystemFile -Value $EcosystemContent
+          Write-Host "Config generated at $EcosystemFile"
+
+          # --- 5. ЗАПУСК ---
+          Write-Host "Starting MasterData..."
+          if (Test-Path $PM2) { 
+             & $PM2 start $EcosystemFile
+             & $PM2 save
+          } else { 
+             pm2 start $EcosystemFile
+             pm2 save
+          }
           
-          # Запускаем с внешним конфигом
-          Start-Process java -ArgumentList "-jar", "app.jar", "--spring.config.additional-location=file:$ConfigFile" `
-                        -RedirectStandardOutput "logs.txt" `
-                        -RedirectStandardError "errors.txt" `
-                        -WindowStyle Hidden
+          Write-Host "Deployment done!"
