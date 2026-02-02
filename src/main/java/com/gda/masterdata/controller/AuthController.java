@@ -3,7 +3,7 @@ package com.gda.masterdata.controller;
 import com.gda.masterdata.dto.auth.AuthLoginRequestDto;
 import com.gda.masterdata.dto.auth.AuthRegisterRequestDto;
 import com.gda.masterdata.dto.auth.AuthResponseDto;
-import com.gda.masterdata.service.AuthenticationService;
+import com.gda.masterdata.service.auth.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

@@ -1,4 +1,4 @@
-package com.gda.masterdata.entity;
+package com.gda.masterdata.entity.user;
 
 import com.gda.masterdata.enums.UserType;
 import jakarta.persistence.*;
