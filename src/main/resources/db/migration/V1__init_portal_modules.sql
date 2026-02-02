@@ -19,35 +19,6 @@ CREATE TABLE role_permissions (
                                   PRIMARY KEY (role_id, permission_id)
 );
 
--- ==========================================
--- 2. PORTAL CONTEXT (Specific)
--- Специфичные таблицы именно для Портала
--- ==========================================
-
-CREATE TABLE portal_modules (
-                                id VARCHAR(50) PRIMARY KEY,
-                                title VARCHAR(100) NOT NULL,
-                                description TEXT,
-                                icon VARCHAR(50),
-                                status VARCHAR(20) DEFAULT 'ACTIVE',
-                                sort_order INT DEFAULT 0
-);
-
-CREATE TABLE portal_module_groups (
-                                      id VARCHAR(50) PRIMARY KEY,
-                                      module_id VARCHAR(50) NOT NULL REFERENCES portal_modules(id),
-                                      name VARCHAR(100) NOT NULL,
-                                      url VARCHAR(255),
-                                      sort_order INT DEFAULT 0
-);
-
--- СВЯЗЬ: Портал ссылается на ГЛОБАЛЬНЫЕ роли
--- "Чтобы видеть эту группу, нужно иметь вот эту глобальную роль"
-CREATE TABLE portal_group_required_roles (
-                                             group_id VARCHAR(50) NOT NULL REFERENCES portal_module_groups(id),
-                                             role_id VARCHAR(50) NOT NULL REFERENCES user_roles(id), -- Ссылка на user_roles!
-                                             PRIMARY KEY (group_id, role_id)
-);
 
 -- ==========================================
 -- 3. SEED DATA (Начальные данные)
