@@ -1,6 +1,6 @@
 spring:
   application:
-    name: global-distributor-master-data
+    name: GDA - Knowledge Master Data
 
   datasource:
     url: jdbc:postgresql://api.globaldistributor.org:5432/masterdata
