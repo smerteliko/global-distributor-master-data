@@ -1,10 +1,10 @@
-package com.gda.masterdata.service;
+package com.gda.masterdata.service.auth;
 
 import com.gda.masterdata.dto.auth.AuthLoginRequestDto;
 import com.gda.masterdata.dto.auth.AuthRegisterRequestDto;
 import com.gda.masterdata.dto.auth.AuthResponseDto;
 import com.gda.masterdata.dto.user.UserSummaryResponseDto;
-import com.gda.masterdata.entity.UserEntity;
+import com.gda.masterdata.entity.user.UserEntity;
 import com.gda.masterdata.enums.UserType;
 import com.gda.masterdata.repository.UserRepository;
 import com.gda.masterdata.security.JwtService;
@@ -56,7 +56,7 @@ public class AuthenticationService {
     }
 
     private AuthResponseDto buildAuthResponse(UserEntity user, String token) {
-        var summary = new UserSummaryResponseDto();
+        UserSummaryResponseDto summary = new UserSummaryResponseDto();
         summary.setEmail(user.getEmail());
         summary.setFirstName(user.getFirstName());
         summary.setLastName(user.getLastName());
@@ -64,7 +64,7 @@ public class AuthenticationService {
         summary.setToken(token);
         summary.setEnabled(user.isEnabled());
 
-        var response = new AuthResponseDto();
+        AuthResponseDto response = new AuthResponseDto();
         response.setUser(summary);
         return response;
     }
