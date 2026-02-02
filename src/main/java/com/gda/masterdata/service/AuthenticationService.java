@@ -61,9 +61,10 @@ public class AuthenticationService {
         summary.setFirstName(user.getFirstName());
         summary.setLastName(user.getLastName());
         summary.setRole(user.getRole());
+        summary.setToken(token);
+        summary.setEnabled(user.isEnabled());
 
         var response = new AuthResponseDto();
-        response.setToken(token);
         response.setUser(summary);
         return response;
     }

@@ -18,7 +18,6 @@ public class SecurityConfig{
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        System.out.println(">>> 🛡️ ЗАГРУЗКА SECURITY CONFIG: РАЗРЕШАЕМ /secure/auth/** <<<");
         http
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))

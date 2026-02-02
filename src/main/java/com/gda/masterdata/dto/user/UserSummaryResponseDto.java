@@ -9,4 +9,5 @@ public class UserSummaryResponseDto {
     protected String lastName;
     protected String token;
     protected String role;
+    protected Boolean enabled;
 }
