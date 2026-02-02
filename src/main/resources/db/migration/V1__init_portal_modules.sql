@@ -1,14 +1,18 @@
 -- V1__init_portal_modules.sql
 
--- Таблица ПРАВ (Что можно делать?)
+-- ==========================================
+-- 1. SECURITY CORE (Таблицы безопасности)
+-- ==========================================
+
+-- Таблица ПРАВ
 CREATE TABLE permissions (
-                             id VARCHAR(50) PRIMARY KEY, -- 'user:create', 'crm:lead:view'
+                             id VARCHAR(50) PRIMARY KEY,
                              description VARCHAR(255)
 );
 
--- Таблица РОЛЕЙ (Кто есть кто?)
+-- Таблица РОЛЕЙ
 CREATE TABLE user_roles (
-                            id VARCHAR(50) PRIMARY KEY, -- 'ROLE_ADMIN', 'ROLE_MANAGER'
+                            id VARCHAR(50) PRIMARY KEY,
                             description VARCHAR(255)
 );
 
@@ -19,42 +23,19 @@ CREATE TABLE role_permissions (
                                   PRIMARY KEY (role_id, permission_id)
 );
 
-
 -- ==========================================
--- 3. SEED DATA (Начальные данные)
--- ==========================================
-
--- 3.1 Глобальные Роли (Они пригодятся и для CRM потом)
-INSERT INTO user_roles (id, description) VALUES
-                                             ('ROLE_ADMIN', 'Super Administrator'),
-                                             ('ROLE_MANAGER', 'General Manager'),
-                                             ('ROLE_MARINE_USER', 'Marine Dept Employee'),
-                                             ('ROLE_FINANCE_USER', 'Finance Dept Employee');
-
--- 3.2 Глобальные права (Пример на будущее)
-INSERT INTO permissions (id, description) VALUES
-                                              ('crm:read', 'Can read CRM data'),
-                                              ('portal:access', 'Can login to portal');
-
-INSERT INTO role_permissions (role_id, permission_id) VALUES
-                                                          ('ROLE_ADMIN', 'crm:read'),
-                                                          ('ROLE_ADMIN', 'portal:access');
-
--- ==========================================
--- 1. СОЗДАНИЕ СТРУКТУРЫ ТАБЛИЦ
+-- 2. PORTAL MODULES (Таблицы модулей)
 -- ==========================================
 
--- Таблица модулей (Контейнеры)
 CREATE TABLE portal_modules (
                                 id VARCHAR(50) PRIMARY KEY,
                                 title VARCHAR(100) NOT NULL,
                                 description TEXT,
                                 icon VARCHAR(50),
-                                status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE', -- 'ACTIVE', 'MAINTENANCE', 'DISABLED'
+                                status VARCHAR(20) DEFAULT 'ACTIVE',
                                 sort_order INT DEFAULT 0
 );
 
--- Таблица групп (Ссылки внутри модуля)
 CREATE TABLE portal_module_groups (
                                       id VARCHAR(50) PRIMARY KEY,
                                       module_id VARCHAR(50) NOT NULL REFERENCES portal_modules(id),
@@ -63,52 +44,65 @@ CREATE TABLE portal_module_groups (
                                       sort_order INT DEFAULT 0
 );
 
--- Таблица ролей (Кто имеет доступ к группе)
+-- СВЯЗЬ: Группа портала -> Глобальная роль
 CREATE TABLE portal_group_required_roles (
                                              group_id VARCHAR(50) NOT NULL REFERENCES portal_module_groups(id),
-                                             role_name VARCHAR(50) NOT NULL,
-                                             PRIMARY KEY (group_id, role_name)
+                                             role_id VARCHAR(50) NOT NULL REFERENCES user_roles(id),
+                                             PRIMARY KEY (group_id, role_id)
 );
 
 -- ==========================================
--- 2. НАПОЛНЕНИЕ ДАННЫМИ (SEED DATA)
+-- 3. SEED DATA (Данные)
 -- ==========================================
 
--- --- MODULE: KEPLER (ACTIVE, Смешанный доступ) ---
-INSERT INTO portal_modules (id, title, description, icon, status, sort_order)
-VALUES ('kepler', 'Marine Traffic / Kepler', 'Vessel tracking, LEO satellite telemetry and logistics proxy.', '🚢', 'ACTIVE', 10);
+-- 3.1. Создаем РОЛИ (Важно создать их первыми!)
+INSERT INTO user_roles (id, description) VALUES
+                                             ('ROLE_ADMIN', 'Super Administrator'),
+                                             ('ROLE_MARINE_ADMIN', 'Head of Marine Dept'),
+                                             ('ROLE_MARINE_USER', 'Marine Dept Employee'),
+                                             ('ROLE_FINANCE_USER', 'Finance Dept Employee');
 
--- Группа 1: Публичная (видна всем)
+-- 3.2. Создаем ПРАВА (Пример)
+INSERT INTO permissions (id, description) VALUES ('portal:access', 'Access to portal');
+INSERT INTO role_permissions (role_id, permission_id) VALUES ('ROLE_ADMIN', 'portal:access');
+
+-- 3.3. Создаем МОДУЛИ и ГРУППЫ
+
+-- --- KEPLER ---
+INSERT INTO portal_modules (id, title, description, icon, status, sort_order)
+VALUES ('kepler', 'Marine Traffic / Kepler', 'Vessel tracking, LEO satellite telemetry.', '🚢', 'ACTIVE', 10);
+
+-- Группа Marine Traffic (Публичная, без ролей)
 INSERT INTO portal_module_groups (id, module_id, name, url, sort_order)
 VALUES ('marinetraffic', 'kepler', 'Marine Traffic', '/marine/docs/Marinetraffic', 1);
 
--- Группа 2: Приватная (только для админов)
+-- Группа Refineries (Требует ROLE_ADMIN или ROLE_MARINE_ADMIN)
 INSERT INTO portal_module_groups (id, module_id, name, url, sort_order)
 VALUES ('refineries', 'kepler', 'Refineries', '/marine/docs/Refineries', 2);
 
-INSERT INTO portal_group_required_roles (group_id, role_name)
-VALUES ('refineries', 'ROLE_ADMIN'), ('refineries', 'ROLE_MARINE_ADMIN');
+-- Привязка ролей к Refineries
+INSERT INTO portal_group_required_roles (group_id, role_id) VALUES
+                                                                ('refineries', 'ROLE_ADMIN'),
+                                                                ('refineries', 'ROLE_MARINE_ADMIN');
 
 
--- --- MODULE: LSEG (ACTIVE, но полностью закрыт ролями) ---
+-- --- LSEG ---
 INSERT INTO portal_modules (id, title, description, icon, status, sort_order)
-VALUES ('lseg', 'LSEG Workspace', 'Real-time financial market data and risk analytics (Refinitiv).', '📈', 'ACTIVE', 20);
+VALUES ('lseg', 'LSEG Workspace', 'Real-time financial market data.', '📈', 'ACTIVE', 20);
 
--- Группа есть, но требует спец. роль -> Модуль виден, но под замком
 INSERT INTO portal_module_groups (id, module_id, name, url, sort_order)
 VALUES ('lseg_main', 'lseg', 'Main API', '/lseg/docs/main', 1);
 
-INSERT INTO portal_group_required_roles (group_id, role_name)
-VALUES ('lseg_main', 'ROLE_FINANCE_USER');
+-- Привязка роли к LSEG (Нужен ROLE_FINANCE_USER)
+INSERT INTO portal_group_required_roles (group_id, role_id) VALUES
+    ('lseg_main', 'ROLE_FINANCE_USER');
 
 
--- --- MODULE: AIRBUS (MAINTENANCE, Групп нет) ---
--- Так как групп нет -> hasAccess будет false -> Замок
+-- --- AIRBUS (Maintenance) ---
 INSERT INTO portal_modules (id, title, description, icon, status, sort_order)
-VALUES ('airbus', 'Airbus Defence & Space', 'Geospatial intelligence and OneAtlas satellite imagery ingestion.', '🌍', 'MAINTENANCE', 30);
+VALUES ('airbus', 'Airbus Defence & Space', 'Geospatial intelligence.', '🌍', 'MAINTENANCE', 30);
 
 
--- --- MODULE: OPENWEATHERMAP (MAINTENANCE, Групп нет) ---
--- Так как групп нет -> hasAccess будет false -> Замок
+-- --- OPENWEATHERMAP (Maintenance) ---
 INSERT INTO portal_modules (id, title, description, icon, status, sort_order)
-VALUES ('openweathermap', 'OpenWeatherMap', 'Global weather forecasting API for logistics planning.', '🌦️', 'MAINTENANCE', 40);
+VALUES ('openweathermap', 'OpenWeatherMap', 'Global weather forecasting.', '🌦️', 'MAINTENANCE', 40);
