@@ -25,10 +25,10 @@ public class PortalModuleGroupEntity {
     private PortalModuleEntity module;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @CollectionTable(
+    @JoinTable(
         name = "portal_group_required_roles",
-        joinColumns = @JoinColumn(name = "group_id")
+        joinColumns = @JoinColumn(name = "group_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    @Column(name = "role_name")
     private Set<UserRole> requiredRoles = new HashSet<>();
 }
