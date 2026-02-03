@@ -14,8 +14,6 @@ public class ManualFlywayMigration {
 
     @PostConstruct
     public void forceMigration() {
-        System.out.println("🚀🚀🚀 ЗАПУСК FLYWAY ВРУЧНУЮ (MANUAL OVERRIDE) 🚀🚀🚀");
-
         try {
             Flyway flyway = Flyway.configure()
                 .dataSource(dataSource)
@@ -24,10 +22,8 @@ public class ManualFlywayMigration {
                 .load();
 
             flyway.migrate();
-            System.out.println("✅✅✅ FLYWAY МИГРАЦИЯ ВЫПОЛНЕНА УСПЕШНО ✅✅✅");
 
         } catch (Exception e) {
-            System.err.println("🔥🔥🔥 ОШИБКА FLYWAY: " + e.getMessage());
             e.printStackTrace();
         }
     }
