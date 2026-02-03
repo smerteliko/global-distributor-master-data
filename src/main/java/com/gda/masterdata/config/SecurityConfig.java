@@ -1,5 +1,6 @@
 package com.gda.masterdata.config;
 
+import com.gda.masterdata.security.JwtAuthenticationEntryPoint;
 import com.gda.masterdata.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -19,9 +20,14 @@ import java.util.List;
 public class SecurityConfig{
 
     private final JwtAuthenticationFilter jwtAuthFilter; // Spring injects the @Component here
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
+    public SecurityConfig(
+        JwtAuthenticationFilter jwtAuthFilter,
+        JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint
+    ) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
     }
 
     @Bean
@@ -36,7 +42,11 @@ public class SecurityConfig{
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            .exceptionHandling(exception -> exception
+                    .authenticationEntryPoint(jwtAuthenticationEntryPoint) // For 401 (Invalid Token)
+                // .accessDeniedHandler(...) // You can add a similar handler for 403 (Valid token, wrong role)
+            );
         return http.build();
     }
 
