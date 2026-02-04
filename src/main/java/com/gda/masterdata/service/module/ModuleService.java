@@ -4,7 +4,7 @@ import com.gda.masterdata.dto.module.GroupDto;
 import com.gda.masterdata.dto.module.ModuleDto;
 import com.gda.masterdata.entity.portal.PortalModuleEntity;
 import com.gda.masterdata.entity.portal.PortalModuleGroupEntity;
-import com.gda.masterdata.entity.user.UserRole;
+import com.gda.masterdata.entity.user.UserRoleEntity;
 import com.gda.masterdata.repository.PortalModuleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -77,7 +77,7 @@ public class ModuleService {
         boolean hasGroupAccess = false;
 
         Set<String> requiredRoleIds = group.getRequiredRoles().stream()
-            .map(UserRole::getId)
+            .map(UserRoleEntity::getId)
             .collect(Collectors.toSet());
 
 

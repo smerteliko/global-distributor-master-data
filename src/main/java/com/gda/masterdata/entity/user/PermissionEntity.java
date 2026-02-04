@@ -7,7 +7,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "permissions") // Просто permissions, без приставки portal
 @Getter @Setter
-public class Permission {
+public class PermissionEntity {
     @Id
     private String id;
     private String description;
