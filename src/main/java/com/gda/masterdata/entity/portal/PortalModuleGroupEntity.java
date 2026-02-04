@@ -1,6 +1,6 @@
 package com.gda.masterdata.entity.portal;
 
-import com.gda.masterdata.entity.user.UserRole;
+import com.gda.masterdata.entity.user.UserRoleEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,5 +30,5 @@ public class PortalModuleGroupEntity {
         joinColumns = @JoinColumn(name = "group_id"),
         inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private Set<UserRole> requiredRoles = new HashSet<>();
+    private Set<UserRoleEntity> requiredRoles = new HashSet<>();
 }

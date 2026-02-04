@@ -29,7 +29,6 @@ public class AuthenticationService {
             .lastName(request.getLastName())
             .email(request.getEmail())
             .password(passwordEncoder.encode(request.getPassword()))
-            .role("ROLE_USER")
             .userType(UserType.USER)
             .enabled(true)
             .build();
@@ -60,7 +59,7 @@ public class AuthenticationService {
         summary.setEmail(user.getEmail());
         summary.setFirstName(user.getFirstName());
         summary.setLastName(user.getLastName());
-        summary.setRole(user.getRole());
+        summary.setRoles(user.getRoles());
         summary.setToken(token);
         summary.setEnabled(user.isEnabled());
 

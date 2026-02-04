@@ -1,6 +1,6 @@
 package com.gda.masterdata.dto.module;
 
-import com.gda.masterdata.entity.user.UserRole;
+import com.gda.masterdata.entity.user.UserRoleEntity;
 import lombok.Builder;
 import lombok.Data;
 
@@ -13,5 +13,5 @@ public class GroupDto {
     private String name;
     private String url;
     private boolean hasAccess; // Можно ли перейти в эту подгруппу
-    private Set<UserRole> requiredRoles; // Для дебага или UI
+    private Set<UserRoleEntity> requiredRoles; // Для дебага или UI
 }

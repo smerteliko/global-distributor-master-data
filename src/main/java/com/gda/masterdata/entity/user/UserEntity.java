@@ -11,10 +11,13 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
-@Table(name = "gda_users")
+@Table(name = "users")
 @Data
 @Builder
 @NoArgsConstructor
@@ -33,7 +36,14 @@ public class UserEntity implements UserDetails {
     private String firstName;
     private String lastName;
 
-    private String role;
+    @ManyToMany(fetch = FetchType.EAGER) // EAGER нужен, чтобы Security Context сразу получил роли при загрузке юзера
+    @JoinTable(
+        name = "users_roles_link",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    @Builder.Default
+    private Set<UserRoleEntity> roles = new HashSet<>();
 
     @Builder.Default
     private boolean enabled = true;
@@ -48,11 +58,17 @@ public class UserEntity implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role));
+        return roles.stream()
+            .map(role -> new SimpleGrantedAuthority(role.getId()))
+            .collect(Collectors.toList());
     }
 
     @Override
     public String getUsername() {
         return email;
+    }
+
+    public void addRole(UserRoleEntity role) {
+        this.roles.add(role);
     }
 }

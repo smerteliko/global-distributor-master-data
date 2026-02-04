@@ -9,7 +9,7 @@ import java.util.Set;
 @Entity
 @Table(name = "user_roles")
 @Getter @Setter
-public class UserRole {
+public class UserRoleEntity {
 
     @Id
     private String id; // ROLE_ADMIN
@@ -22,5 +22,5 @@ public class UserRole {
         joinColumns = @JoinColumn(name = "role_id"),
         inverseJoinColumns = @JoinColumn(name = "permission_id")
     )
-    private Set<Permission> permissions = new HashSet<>();
+    private Set<PermissionEntity> permissions = new HashSet<>();
 }
