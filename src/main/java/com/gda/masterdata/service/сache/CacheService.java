@@ -1,7 +1,6 @@
-package com.gda.masterdata.service.Cache;
+package com.gda.masterdata.service.сache;
 
 import com.gda.masterdata.config.CacheConstants;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.Cursor;
@@ -20,7 +19,6 @@ public class CacheService {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    @Autowired
     public CacheService(RedisTemplate<String, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }

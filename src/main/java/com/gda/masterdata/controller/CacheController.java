@@ -1,10 +1,8 @@
 package com.gda.masterdata.controller;
 
 import com.gda.masterdata.dto.cache.CacheClearResponse;
-import com.gda.masterdata.service.Cache.CacheService;
-import lombok.Data;
+import com.gda.masterdata.service.сache.CacheService;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.annotations.Parameter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
