@@ -1,5 +1,6 @@
 package com.gda.masterdata.service.module;
 
+import com.gda.masterdata.config.CacheConstants;
 import com.gda.masterdata.dto.module.GroupDto;
 import com.gda.masterdata.dto.module.ModuleDto;
 import com.gda.masterdata.entity.portal.PortalModuleEntity;
@@ -7,6 +8,7 @@ import com.gda.masterdata.entity.portal.PortalModuleGroupEntity;
 import com.gda.masterdata.entity.user.UserRoleEntity;
 import com.gda.masterdata.repository.PortalModuleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +25,7 @@ public class ModuleService {
 
     private final PortalModuleRepository moduleRepository;
 
+    @Cacheable(value = CacheConstants.MODULES, key = "'user'")
     public List<ModuleDto> getModulesForCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Set<String> userRoles = (auth != null)
