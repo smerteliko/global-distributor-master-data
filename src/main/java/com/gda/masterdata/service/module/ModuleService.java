@@ -25,7 +25,10 @@ public class ModuleService {
 
     private final PortalModuleRepository moduleRepository;
 
-    @Cacheable(value = CacheConstants.MODULES, key = "'user'")
+    @Cacheable(
+        value = CacheConstants.MODULES,
+        key = "T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication().getName()"
+    )
     public List<ModuleDto> getModulesForCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Set<String> userRoles = (auth != null)
