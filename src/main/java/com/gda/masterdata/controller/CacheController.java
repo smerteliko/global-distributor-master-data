@@ -14,14 +14,14 @@ public class CacheController {
     private final CacheService cacheService;
 
     @GetMapping("/flush-all")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    //@PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<CacheClearResponse> flushAll() {
         long count = cacheService.flushAll();
         return ResponseEntity.ok(new CacheClearResponse("All caches cleared successfully", count));
     }
 
     @GetMapping("/clear")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    //@PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<CacheClearResponse> clearByTag(
         @RequestParam String tagName
     ) {
