@@ -3,6 +3,7 @@ package com.gda.masterdata.service.Cache;
 import com.gda.masterdata.config.CacheConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -14,10 +15,15 @@ import java.util.Set;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class CacheService {
     // Spring Boot сам подтянет настроенный RedisTemplate
+
     private final RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
+    public CacheService(RedisTemplate<String, Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     /**
      * Очищает кэш по имени тега (например, "portal:modules").
